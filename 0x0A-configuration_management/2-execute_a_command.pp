@@ -1,4 +1,3 @@
-#Excecute a command
 # kill process killmenow
 
 exec { 'pkill':
