@@ -12,18 +12,6 @@ IP=$2
 USERNAME=$3
 PATH_TO_SSH_KEY=$4
 
-# Check if the file exists
-if [ ! -f "$PATH_TO_FILE" ]; then
-    echo "File $PATH_TO_FILE does not exist."
-    exit 1
-fi
-
-# Check if the SSH key file exists
-if [ ! -f "$PATH_TO_SSH_KEY" ]; then
-    echo "SSH key file $PATH_TO_SSH_KEY does not exist."
-    exit 1
-fi
-
 # Use scp to transfer the file
 scp -i "$PATH_TO_SSH_KEY" -o StrictHostKeyChecking=no "$PATH_TO_FILE" "$USERNAME@$IP:~/"
 
