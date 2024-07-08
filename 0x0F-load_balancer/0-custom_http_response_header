@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Automating nginx configuration.
+
+apt-get update
+apt-get -y install nginx
+
+sed -i "/http {/a\      add_header X-Served-By $HOSTNAME;" /etc/nginx/nginx.conf
+
+service nginx restart
