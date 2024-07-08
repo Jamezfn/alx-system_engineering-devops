@@ -1,37 +1,9 @@
 #!/usr/bin/env bash
-#script to configure nginx with a custom header
+# Automating nginx configuration.
 
-REMOTE_USER=$1
-REMOTE_HOST=$2
-NGINX_CONFIG_PATH="/etc/nginx/nginx.conf"
-VALUE=$3
+apt-get update
+apt-get -y install nginx
 
-if [ $# -lt 3 ]
-then
-	echo "not enough arguments"
-	exit 1
-fi
+sed -i "/http {/a\      add_header X-Served-By $HOSTNAME;" /etc/nginx/nginx.conf
 
-CONFIG_CONTENT="
-events {
-	worker_connections 1024;
-}
-http {
-	server {
-		listen 80;
-		server_name 34.229.67.177;
-		add_header X-Served-By \"$VALUE\";
-
-		location / {
-			root /var/www/html;
-			index index.html;
-			autoindex on;
-		}
-	}
-}
-"
-
-echo "$CONFIG_CONTENT" | ssh "$REMOTE_USER"@"$REMOTE_HOST" "sudo tee $NGINX_CONFIG_PATH > /dev/null"
-
-#restart nginx on remote server to apply changes
-ssh "$REMOTE_USER"@"$REMOTE_HOST" "sudo systemctl restart nginx"
+service nginx restart
