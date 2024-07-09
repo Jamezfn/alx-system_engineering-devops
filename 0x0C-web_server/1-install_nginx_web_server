@@ -1,30 +1,8 @@
 #!/usr/bin/env bash
 # This script installs and configures Nginx on an Ubuntu server to return "Hello World!" at the root URL
 
-# Update package list
 apt-get update -y
-
-# Install Nginx
 apt-get install nginx -y
-
-# Configure Nginx to return "Hello World!" at the root URL
-echo 'Hello World!' > /var/www/html/index.html
-
-# Start Nginx without using systemctl
-service nginx start
-
-# Check if Nginx started successfully
-if service nginx status | grep -q 'running'; then
-    echo "Nginx started successfully."
-else
-    echo "Failed to start Nginx."
-    exit 1
-fi
-
-# Check if Nginx is listening on port 80
-if netstat -tuln | grep -q ':80'; then
-    echo "Nginx is listening on port 80."
-else
-    echo "Nginx is not listening on port 80."
-    exit 1
-fi
+sudo ufw allow 'Nginx HTTP'
+sh -c 'echo "Hello World!" > /var/www/html/index.html'
+service nginx restart
