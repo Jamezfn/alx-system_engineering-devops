@@ -1,32 +1,36 @@
 #!/usr/bin/env bash
 # Automating nginx configuration.
 
+# Update the package list and install nginx
 apt-get update
 apt-get -y install nginx
 
-mkdir /etc/nginx/html
-touch /etc/nginx/html/index.html
-echo "Hello World!" > /etc/nginx/html/index.html
-touch /etc/nginx/html/4040.html
-echo "Ceci n' est pas une page" > /etc/nginx/html/index.html/404.html
+# Create directory and files for the website
+mkdir -p /var/www/html
+echo "Hello World!" > /var/www/html/index.html
+echo "Ceci n'est pas une page" > /var/www/html/404.html
 
-printf %s "server {
-	listen 80;
-	listen [::]:80 default_server;
-	add_header X-Served-By $HOSTNAME;
+# Configure Nginx to include the custom header
+printf "server {
+    listen 80;
+    listen [::]:80 default_server;
+    server_name _;
+    
+    add_header X-Served-By \$HOSTNAME;
+    
+    root /var/www/html;
+    index index.html;
 
-	root	/etc/nginx/html;
-	index   index.html index.html;
+    location /redirect_me {
+        return 301 http://cuberule.com/;
+    }
+    
+    error_page 404 /404.html;
+    location /404 {
+        internal;
+    }
+}" > /etc/nginx/sites-available/default
 
-	location /redirect_me {
-		return 301 http://cuberule.com/;
-	}
-	
-	error_page 4040 /404.html;
-	location /4040 {
-	root /etc/nginx/html;
-	internal;
-	}
-}" > /etc/nginx/sites-available
-
+# Restart nginx to apply the changes
 service nginx restart
+

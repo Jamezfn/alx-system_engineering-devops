@@ -1,24 +1,47 @@
 #!/usr/bin/env bash
-#script to install and configure haproxy
+# Script to configure HAProxy on lb-01 server.
 
-PATH_TO_CFG="/etc/haproxy/haproxy.cfg"
-REMOTE_USER="ubuntu"
-REMOTE_HOST="100.25.146.195"
-ssh "$REMOTE_USER"@"$REMOTE_HOST" "sudo apt-get update -y && sudo apt install haproxy -y"
+# Update package list and install HAProxy
+apt-get update
+apt-get -y install haproxy
 
-CONFIG_CONTENT="
-frontend my_frontend
-	bind *:80
-	mode http
-	timeout client 10s
-	default_backend my_servers
+# Configure HAProxy to distribute traffic to web-01 and web-02 using roundrobin
+cat <<EOF > /etc/haproxy/haproxy.cfg
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    chroot /var/lib/haproxy
+    stats socket /run/haproxy/admin.sock mode 660 level admin
+    stats timeout 30s
+    user haproxy
+    group haproxy
+    daemon
 
-backend my_servers
-	mode http
-	timeout connect 20s
-	balance roundrobin
-	server 335068-web-01 54.160.118.189:80
-	server 335068-web-02 34.229.67.177:80
-	timeout server 20s
-"
-echo "$CONFIG_CONTENT" | ssh "$REMOTE_USER"@"$REMOTE_HOST" "sudo tee $PATH_TO_CFG > /dev/null && sudo haproxy -c -f $PATH_TO_CFG && sudo systemctl restart haproxy"
+defaults
+    log global
+    mode http
+    option httplog
+    option dontlognull
+    timeout connect 5000
+    timeout client 50000
+    timeout server 50000
+
+frontend http_front
+    bind *:80
+    default_backend http_back
+
+backend http_back
+    balance roundrobin
+    server web01 [STUDENT_ID]-web-01:80 check
+    server web02 [STUDENT_ID]-web-02:80 check
+
+listen stats
+    bind *:8080
+    stats enable
+    stats uri /stats
+    stats auth admin:admin
+EOF
+
+# Enable and start HAProxy service
+systemctl enable haproxy
+systemctl start haproxy
