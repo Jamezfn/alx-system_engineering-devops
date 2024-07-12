@@ -1,3 +1,20 @@
+#!/usr/bin/env bash
+# Configure HAProxy on lb-01 server to distribute traffic to web-01 and web-02 using roundrobin
+
+# Update package list and install HAProxy
+apt-get update
+apt-get -y install haproxy
+
+# Create the necessary directory for SSL certificates
+mkdir -p /etc/haproxy/certs
+
+# Place your SSL certificate and key in /etc/haproxy/certs/www.bdbnb.site.pem
+# Ensure the combined certificate and key file exists
+# You can concatenate the certificate and key like this:
+# cat www.bdbnb.site.crt www.bdbnb.site.key > /etc/haproxy/certs/www.bdbnb.site.pem
+
+# Create the HAProxy configuration file
+cat <<EOF > /etc/haproxy/haproxy.cfg
 global
     log     /dev/log local0
     maxconn 2048
@@ -39,3 +56,8 @@ backend www-backend
 
 backend letsencrypt-backend
     server letsencrypt 127.0.0.1:54321
+EOF
+
+# Ensure HAProxy service uses the new configuration
+systemctl restart haproxy
+systemctl enable haproxy

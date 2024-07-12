@@ -1,3 +1,12 @@
+#!/usr/bin/env bash
+# Configure HAProxy on lb-01 server to distribute traffic to web-01 and web-02 using roundrobin
+
+# Update package list and install HAProxy
+apt-get update
+apt-get -y install haproxy
+
+# Create the HAProxy configuration file
+cat <<EOF > /etc/haproxy/haproxy.cfg
 global
     log     /dev/log local0
     maxconn 2048
@@ -38,3 +47,9 @@ backend www-backend
 
 backend letsencrypt-backend
     server letsencrypt 127.0.0.1:54321
+EOF
+
+# Ensure HAProxy service uses the new configuration
+systemctl restart haproxy
+systemctl enable haproxy
+
