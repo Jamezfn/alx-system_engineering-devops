@@ -8,5 +8,5 @@ Host *
     GSSAPIAuthentification yes
 
 Host myserver
-    HostName 100.26.10.86
+    HostName 54.167.174.127
     User ubuntu
