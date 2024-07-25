@@ -1,7 +1,27 @@
 #!/usr/bin/env bash
-# Fixes a web server to run Nginx as the nginx user listening on port 8080.
-sed -i "s/#user www-data/user nginx/" /etc/nginx/nginx.conf
-sed -i "s/80/8080/g" /etc/nginx/sites-available/default
-chmod 644 /etc/nginx/nginx.conf
+# Fix this container so that Nginx is running as the nginx user.
+# Requirements:
+# nginx must be running as nginx user
+# nginx must be listening on all active IPs on port 8080
+# You cannot use apt-get remove
+# Write a Bash script that configures the container to fit the above requirements
+sudo sed -i 's/user www-data/user nginx' /etc/nginx/nginx.conf
+sudo sed -i 's/80/8080/g' /etc/nginx/sites-available/default
+sudo chmod 644 /etc/nginx/nginx.conf
 pkill apache2
-sudo -u nginx service nginx start
+sudo nginx -t || { echo "Nginx configuration test failed."; exit 1; }
+sudo service nginx restart
+if ps aux | grep '[n]ginx' | awk '{print $1}' | grep -q '^nginx$'; then
+	echo "Nginx is running as the nginx user."
+else
+	echo "Nginx is not running as the nginx user."
+	exit 1
+fi
+
+if netstat -tuln | grep ':8080'; then
+	echo "Nginx is listening on port 8080."
+else
+	echo "Nginx is not listening on port 8080."
+	exit 1
+fi
+
