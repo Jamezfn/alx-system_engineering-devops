@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#Read and cut
+while IFS=: -r user_uid__home_; do
+	echo "&{user}:${uid}:${home}"
+done < /etc/passwd

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#Groups the apache list entries
+
+awk '{
+	key = $1 SUBSET $9
+	count[key]++
+}
+END {
+	for (k in count) {
+    		split(k, parts, SUBSEP)
+    		printf("%6d %s %s\n", count[k], parts[1], parts[2])
+  }	
+}'apache-acces.log | sort -nr
