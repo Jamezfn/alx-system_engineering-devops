@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# prints “To infinity and beyond” forever, but on SIGTERM shouts “I am invincible!!!”
+trap 'echo "I am invincible!!!"' SIGTERM
+
+while true; do
+  echo "To infinity and beyond"
+  sleep 2
+done
+

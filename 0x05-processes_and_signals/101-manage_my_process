@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# init-style controller for manage_my_process
+
+PIDFILE=/var/run/my_process.pid
+CMD="manage_my_process"
+
+start() {
+  $CMD &                        # fire up the background job
+  echo $! > "$PIDFILE"         # save its PID
+  echo "manage_my_process started"
+}
+
+stop() {
+  if [[ -f "$PIDFILE" ]]; then
+    kill "$(cat "$PIDFILE")"    # stop it
+    rm -f "$PIDFILE"            # remove pidfile
+    echo "manage_my_process stopped"
+  fi
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    echo "manage_my_process restarted"
+    ;;
+  *)
+    echo "Usage: manage_my_process {start|stop|restart}"
+    exit 1
+    ;;
+esac
+

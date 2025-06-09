@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# list PIDs and names of processes whose name contains “bash”
+for pid_path in /proc/[0-9]*; do
+  pid=${pid_path##*/}                 
+  comm_file="$pid_path/comm"
+  [[ -r $comm_file ]] || continue             
+  name=$(<"$comm_file")                     
+  [[ $name == *bash* ]] && printf "%s %s\n" "$pid" "$name"
+done

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# stops any running
+# find the PID(s) by matching the script name in the command line
+pids=$(pgrep -f "./4-to_infinity_and_beyond")
+# if we found any, send them TERM
+if [[ -n $pids ]]; then
+  kill $pids
+fi

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# find any running “4-to_infinity_and_beyond” pids and send them Ctrl-C via their tty
+
+# grab the PIDs of our target script
+pids=$(pgrep -f "./4-to_infinity_and_beyond")
+
+for pid in $pids; do
+  # figure out which tty they're running on (e.g. “pts/0”)
+  tty=$(ps -o tty= -p "$pid" | tr -d ' ')
+  # if we got a tty, send the ASCII ETX (Ctrl-C) to it
+  if [[ -n $tty ]]; then
+    printf '\003' > "/dev/$tty"
+  fi
+done
+

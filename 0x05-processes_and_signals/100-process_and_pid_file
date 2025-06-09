@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+PIDFILE=/var/run/myscript.pid
+echo $$ > "$PIDFILE"
+
+# on Ctrl-C (SIGINT): complain but keep running
+trap 'echo "Y U no love me?!"' SIGINT
+
+# on SIGQUIT: clean up and exit
+trap 'rm -f "$PIDFILE"; exit' SIGQUIT
+
+# on SIGTERM: hate the kill, clean up and exit
+trap 'echo "I hate the kill command"; rm -f "$PIDFILE"; exit' SIGTERM
+
+while true; do
+  echo "To infinity and beyond"
+  sleep 2
+done
+
