@@ -1,8 +1,58 @@
 #!/usr/bin/env bash
-#change your home IP
+# 0-change_your_home_IP
+# Usage: sudo ./0-change_your_home_IP
 
-cp /etc/hosts ~/hosts.new
-sed -i 's/^127.0.0.1.*/127.0.0.2/g' ~/hosts.new
+set -e
 
-echo "8.8.8.8 facebook.com" >> ~/hosts.new
-cp -f ~/hosts.new/etc/hosts
+HOSTS_FILE="/etc/hosts"
+
+# Ensure we're root
+if [[ $EUID -ne 0 ]]; then
+  echo "[-] Must be run as root. Use sudo."
+  exit 1
+fi
+
+# Backup original hosts
+timestamp=$(date +%s)
+BACKUP_PATH="${HOSTS_FILE}.bak.${timestamp}"
+cp "$HOSTS_FILE" "$BACKUP_PATH"
+echo "[+] Backed up $HOSTS_FILE to $BACKUP_PATH"
+
+# Function to comment out lines matching a pattern
+comment_out() {
+  local pattern="$1"
+  # Only comment if not already commented
+  # Using sed in-place: prepend "#" if line matches pattern and not starting with #
+  sed -i.bak -E "/^[[:space:]]*[^#].*${pattern}/ s|^|# |" "$HOSTS_FILE"
+  # sed -i.bak creates a .bak but we don't need that extra; remove it
+  rm -f "${HOSTS_FILE}.bak"
+}
+
+# 1. Handle localhost
+# Comment out any existing lines mapping localhost on IPv4 (e.g., 127.0.0.* localhost)
+comment_out "localhost"
+
+# Add new localhost mapping
+# But ensure we don’t add duplicate if already there:
+if ! grep -qE '^[[:space:]]*127\.0\.0\.2[[:space:]]+localhost($|[[:space:]])' "$HOSTS_FILE"; then
+  echo "127.0.0.2 localhost" >> "$HOSTS_FILE"
+  echo "[+] Added: 127.0.0.2 localhost"
+else
+  echo "[*] 127.0.0.2 localhost already present"
+fi
+
+# 2. Handle facebook.com
+# Comment out any existing lines mentioning facebook.com
+comment_out "facebook\.com"
+
+# Add new mapping
+if ! grep -qE '^[[:space:]]*8\.8\.8\.8[[:space:]]+facebook\.com($|[[:space:]])' "$HOSTS_FILE"; then
+  echo "8.8.8.8 facebook.com" >> "$HOSTS_FILE"
+  echo "[+] Added: 8.8.8.8 facebook.com"
+else
+  echo "[*] 8.8.8.8 facebook.com already present"
+fi
+
+echo "[+] Done. You can test with: ping localhost ; ping facebook.com"
+echo "[!] If you need to revert, run: sudo cp \"$BACKUP_PATH\" \"$HOSTS_FILE\""
+

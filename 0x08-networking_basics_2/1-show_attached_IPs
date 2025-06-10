@@ -1,3 +1,21 @@
 #!/usr/bin/env bash
+# 1-show_attached_IPs
+# Usage: ./1-show_attached_IPs
+# Prints each active IPv4 address on its own line.
 
-ipv4_ips=$(ifconfig | grep -oE 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | grep -oE '([0-9]*\.){3}[0-9]*')
+set -e
+
+# Ensure 'ip' command exists
+if ! command -v ip >/dev/null 2>&1; then
+  echo "Error: 'ip' command not found." >&2
+  exit 1
+fi
+
+# List IPv4 addresses on interfaces that are UP (includes loopback if up)
+# -4: IPv4 only
+# -o: one-line output per address
+# 'addr show up': only interfaces in UP state
+# awk $4 is the address/prefix (e.g., "192.168.1.5/24")
+# cut removes the /prefix to leave just the IP
+ip -4 -o addr show up | awk '{print $4}' | cut -d/ -f1 | sort -u
+
