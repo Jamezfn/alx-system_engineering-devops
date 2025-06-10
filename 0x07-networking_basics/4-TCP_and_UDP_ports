@@ -1,3 +1,44 @@
-#!/bin/bash
-# Listens on port
-netstat -lp
+#!/usr/bin/env bash
+
+# Script: 4-TCP_and_UDP_ports
+# Usage: sudo ./4-TCP_and_UDP_ports   (or ./4-TCP_and_UDP_ports, it will sudo itself if needed)
+# Prints listening Internet sockets (TCP/UDP) and UNIX domain sockets with PID/Program.
+
+# Determine whether to prefix commands with sudo
+if [ "$EUID" -ne 0 ]; then
+    SUDO="sudo"
+else
+    SUDO=""
+fi
+
+# Determine which tool to use: prefer ss, fallback to netstat
+if command -v ss >/dev/null 2>&1; then
+    TOOL="ss"
+elif command -v netstat >/dev/null 2>&1; then
+    TOOL="netstat"
+else
+    echo "Error: neither ss nor netstat found." >&2
+    exit 1
+fi
+
+# Print listening Internet sockets
+echo "Active Internet connections (only servers)"
+if [ "$TOOL" = "ss" ]; then
+    # -t: TCP, -u: UDP, -l: listening, -n: no DNS resolution, -p: show PID/program
+    $SUDO ss -tulnp
+else
+    # netstat options: -t: TCP, -u: UDP, -l: listening, -n: numeric, -p: PID/program
+    # On some systems netstat is in /usr/sbin, sudo will handle it.
+    $SUDO netstat -tulnp
+fi
+
+echo
+# Print listening UNIX-domain sockets
+echo "Active UNIX domain sockets (only servers)"
+if [ "$TOOL" = "ss" ]; then
+    # -x: UNIX sockets, -l: listening, -n: numeric, -p: PID/program
+    $SUDO ss -xlnp
+else
+    # netstat options: -x: UNIX, -l: listening, -n: numeric, -p: PID/program
+    $SUDO netstat -xlnp
+fi
