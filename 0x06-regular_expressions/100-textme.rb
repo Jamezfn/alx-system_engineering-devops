@@ -1,9 +1,8 @@
 #!/usr/bin/env ruby
-paragraph = ARGV[0]
-sender_match = paragraph.match(/from:\s*([a-zA-z0-9+]+).*$/i)
-receiver_match = paragraph.match(/to:\s*([+1-9]+).*$/i)
-flags_match = paragraph.match(/flags:\s*([0-1\-:]+).*$/i)
-sender = sender_match ? sender_match[1] : "Sender not found"
-receiver = receiver_match ? receiver_match[1] : "Receiver not found"
-flags = flags_match ? flags_match[1] : "Flags not found"
-puts "#{sender}, #{receiver}, #{flags}"
+#!/usr/bin/env ruby
+line = ARGV[0]
+if line
+  # look for [from:...] [to:...] [flags:...]
+  m = line.match(/\[from:([^\]]+)\].*?\[to:([^\]]+)\].*?\[flags:([^\]]+)\]/)
+  puts "#{m[1]},#{m[2]},#{m[3]}" if m
+end
