@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
-# Fix this container so that Nginx is running as the nginx user.
-# Requirements:
-# nginx must be running as nginx user
-# nginx must be listening on all active IPs on port 8080
-# You cannot use apt-get remove
-# Write a Bash script that configures the container to fit the above requirements
-sudo sed -i 's/user www-data/user nginx' /etc/nginx/nginx.conf
-sudo sed -i 's/80/8080/g' /etc/nginx/sites-available/default
-sudo chmod 644 /etc/nginx/nginx.conf
-pkill apache2
-sudo -u nginx service nginx start
+if ! id "nginx" &>/dev/null; then
+  sudo useradd --system --no-create-home --shell /usr/sbin/nologin nginx
+fi
+
+if grep -q '^user ' /etc/nginx/nginx.conf; then
+  sudo sed -i 's/^user .*/user nginx;/' /etc/nginx/nginx.conf
+fi
+
+sudo sed -i 's/listen 80;/listen 8080;/' /etc/nginx/nginx.conf
+sudo chown -R nginx:nginx /var/log/nginx /var/lib/nginx /etc/nginx
+sudo chmod -R 755 /var/log/nginx /var/lib/nginx
+sudo pkill nginx
+sudo systemctl restart nginx
+echo "Nginx status:"
+sudo systemctl status nginx | grep Active
